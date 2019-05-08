@@ -1,0 +1,191 @@
+<sql문>
+( 테이블 드랍 )
+drop table users;
+drop table users_list;
+drop table chat_room;
+drop table chat_members;
+drop table chat_logs;
+DROP SEQUENCE seq_users;
+drop SEQUENCE seq_chat;
+--------------------------------------------
+( 테이블 생성 )
+
+create table users(
+	user_code number primary key,
+	user_name varchar2(15),
+	user_id varchar2(15) unique,
+	user_pw varchar2(20),
+	user_birth varchar2(10),
+	user_phone varchar2(15),
+	user_email varchar2(25),
+	user_nick varchar2(15) unique,
+	user_img varchar2(30)
+)
+/
+
+------------------------------------------------
+//user_list 테이블 생성
+create table users_list(
+	user_code number,
+	type varchar2(10),
+	friend number
+) 
+/
+------------------------------------------------
+//user_code에 들어갈 sequence 생성
+create sequence seq_users
+increment by 1
+start with 1
+/
+
+------------------------------------------------
+//chat_room 테이블 생성
+create table chat_room(
+	chat_code number primary key,
+	chat_name varchar2(50)
+)
+/
+
+------------------------------------------------
+//chat_code에 들어갈 sequence 생성
+create sequence seq_chat
+increment by 1
+start with 1;
+
+------------------------------------------------
+//chat_members 테이블 생성
+create table chat_members(
+	chat_code number,
+	user_code number
+)
+/
+
+------------------------------------------------
+//chat_logs 테이블 생성
+create table chat_logs(
+	chat_code number,
+	user_code number,
+	chat_log varchar2(200),
+	time varchar2(30)
+)
+/
+-----------------------------------------------
+( 회원 등록 )
+insert into users values(seq_users.nextval, '이주영', 'joo', '123', '19890410', '010-6653-5677', 'joo@naver.com', '주영', '4.jpg');
+insert into users values(seq_users.nextval, '남학선', 'hak', '123', '19940201', '010-2231-1641', 'hak@naver.com', '푸른콩', '1.jpg');
+insert into users values(seq_users.nextval, '신명재', 'jae', '123', '19981003', '010-3522-8431', 'jae@daum.net', '명', '2.jpg');
+insert into users values(seq_users.nextval, '오혜린', 'rin', '123', '19941129', '010-4022-8837', 'rin@gmail.com', '혜린', '3.jpg');
+insert into users values(seq_users.nextval, '김민호', 'ho', '123', '19920303', '010-2341-2341', 'ho@naver.com', '갓라이크', '0.jpg');
+insert into users values(seq_users.nextval, '홍길동', 'hong', '123', '19880320', '010-2555-0493', 'hong@daum.net', '길동', '5.jpg');
+insert into users values(seq_users.nextval, '김철수', 'chul', '123', '19891102', '010-3883-1234', 'chul@naver.com', '철수', '6.jpg');
+insert into users values(seq_users.nextval, '신짱구', 'jjang', '123', '19910222', '010-0382-3333', 'jjang@naver.com', '짱구', '7.jpg');
+--------------------------------------------
+( 친구 등록 )
+insert into users_list values(1, '친구', 2);
+insert into users_list values(1, '친구', 3);
+insert into users_list values(1, '친구', 4);
+insert into users_list values(1, '친구', 5);
+insert into users_list values(2, '친구', 1);
+insert into users_list values(2, '친구', 3);
+insert into users_list values(2, '친구', 4);
+insert into users_list values(2, '친구', 5);
+insert into users_list values(3, '친구', 1);
+insert into users_list values(3, '친구', 2);
+insert into users_list values(3, '친구', 4);
+insert into users_list values(3, '친구', 5);
+insert into users_list values(4, '친구', 1);
+insert into users_list values(4, '친구', 2);
+insert into users_list values(4, '친구', 3);
+insert into users_list values(4, '친구', 5);
+insert into users_list values(5, '친구', 1);
+insert into users_list values(5, '친구', 2);
+insert into users_list values(5, '친구', 3);
+insert into users_list values(5, '친구', 4);
+--------------------------------------------
+( 채팅방 및 채팅 로그 생성 )
+insert into chat_room values(1, '주영, 푸른콩');
+insert into chat_members values(1, 1);
+insert into chat_members values(1, 2);
+insert into chat_logs values(1, 1, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(1, 2, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+insert into chat_room values(2, '주영, 명');
+insert into chat_members values(2, 1);
+insert into chat_members values(2, 3);
+insert into chat_logs values(2, 1, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(2, 3, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(3, '주영, 혜린');
+insert into chat_members values(3, 1);
+insert into chat_members values(3, 4);
+insert into chat_logs values(3, 1, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(3, 4, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(4, '주영, 갓라이크');
+insert into chat_members values(4, 1);
+insert into chat_members values(4, 5);
+insert into chat_logs values(4, 1, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(4, 5, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(5, '푸른콩, 명');
+insert into chat_members values(5, 2);
+insert into chat_members values(5, 3);
+insert into chat_logs values(5, 2, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(5, 3, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(6, '푸른콩, 혜린');
+insert into chat_members values(6, 2);
+insert into chat_members values(6, 4);
+insert into chat_logs values(6, 2, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(6, 4, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(7, '푸른콩, 갓라이크');
+insert into chat_members values(7, 2);
+insert into chat_members values(7, 5);
+insert into chat_logs values(7, 2, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(7, 5, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(8, '명, 혜린');
+insert into chat_members values(8, 3);
+insert into chat_members values(8, 4);
+insert into chat_logs values(8, 3, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(8, 4, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(9, '명, 갓라이크');
+insert into chat_members values(9, 3);
+insert into chat_members values(9, 5);
+insert into chat_logs values(9, 3, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(9, 5, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(10, '혜린, 갓라이크');
+insert into chat_members values(10, 4);
+insert into chat_members values(10, 5);
+insert into chat_logs values(10, 4, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(10, 5, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+insert into chat_room values(11, '주영, 푸른콩, 명, 혜린, 갓라이크');
+insert into chat_members values(11, 1);
+insert into chat_members values(11, 2);
+insert into chat_members values(11, 3);
+insert into chat_members values(11, 4);
+insert into chat_members values(11, 5);
+insert into chat_logs values(11, 1, '안녕', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(11, 2, '안녕하세요', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(11, 3, 'ㅎㅇ', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(11, 4, 'hello', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+insert into chat_logs values(11, 5, 'bonjour', (SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') FROM DUAL));
+
+
+
+
+
+

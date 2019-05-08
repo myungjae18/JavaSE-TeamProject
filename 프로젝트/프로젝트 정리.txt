@@ -1,0 +1,76 @@
+-프로그램 가동 전 중앙 서버에서 multiserver클래스를 이용하여 서버를 가동한다
+<서버 연결 방식>
+(관리자 영역)			(사용자 영역)
+DB==MultiServer|| --(유저 1명 접속)-- ServerThread -- ( ClientThread==MemberLogin )
+->MultiServer의 list 배열에 element 추가
+		|| --(유저 2명 접속)-- ServerThread -- ( ClientThread==MemberLogin )
+		   || --(유저 3명 접속)-- ServerThread -- ( ClientThread==MemberLogin )
+						.
+						.
+						.
+<서버와 데이터 교환 방식>
+1. 각 클래스에서 데이터를 json에 넣은 뒤 String으로 형변환하여 clientThread의 send() 메서드를 이용하여
+ ServerThread에 보낸다.
+2. ServerThread는 listen() 메서드를 통해 데이터를 받은 뒤 그 데이터를 ServerParser의 parser() 메서드로 전달한다.
+3. parser() 메서드는 받은 데이터를 json으로 변환하여 그 데이터의 type을 통해 분류한 후 sql문이나
+ 내부 코드를 이용하여 자체 판단을 한 뒤 그에 맞는 데이터를 json에 넣은 뒤 String으로 형변환하여
+ send() 메서드를 통해 ClientThread에 보낸다.
+4. ClientThread는 listen() 메서드를 통해 ServerThread가 보낸 데이터를 받은 뒤 그 데이터를 다시
+ ParserResult의 parse() 메서드를 이용하여 ParserResult 클래스에 보낸다.
+5. ParserResult는 받은 데이터를 다시 json 형태로 변환하여 그 데이터의 타입을 분석한 다음 해당
+ 되는 클래스에 알맞은 명령을 내린다.
+
+<로그인 단계에서의 작동 원리>
+1. 프로그램 가동
+	(1) 제일 먼저 LoginMain이 실행되면서 동시에 연결되어 있는 panel인 MemberLogin 클래스가 로드된다.
+	(2) MemberLogin 클래스는 login 창의 디자인을 표현함과 동시에 클래스 내에 있는
+	    connectServer() 메서드를 통해 서버와 연결된다. 동시에 로그인 관련 명령을 서버에 보내주는 
+	    ClientThread의 send() 메서드와, 서버의 명령을 듣는 listen() 메서드가 실행되면서, ServerThread도 
+	    마찬가지로 send()와 listen() 메서드가 실행된다. ClientThread와 ServerThread는 로그인 창이 띄워져
+	    있는 동안 내내 listen() 메서드를 유지한다.
+2. 로그인 버튼 작동 원리
+	(1) 버튼을 눌렀을 때 일단 id 및 password 텍스트창에 내용이 채워져 있는 지 확인하여, 입력한 데이터가
+	    db에 존재하는지 검사하는 accept() 메서드를 실행할 것인지 여부를 결정한다. 텍스트 창 중 하나라도
+	    비워져 있다면 accept() 메서드가 실행되지 않는다.	   
+	(2) accept() 메서드는 입력한 id와 password 데이터를 Type 'login'으로 json에 저장한 뒤 서버에 보낸다.
+	    만약 DB에 저장되어 있지 않은 데이터라면 없는 데이터임을 사용자에게 알림창으로 알린다. 올바르게
+	    입력했다면 로그인이 성공했음을 서버에 알린다.
+3. 회원 가입 버튼 작동 원리
+	버튼을 누르면 MemberRegist 클래스를 호출한다.
+
+<회원 가입 단계에서의 작동 원리>
+1. 프로그램 가동
+	MemberLogin의 회원가입 버튼 actionListener()에 의해 실행된다.
+2. 아이디와 닉네임 중복 확인 버튼 작동 원리
+	(1) 아이디 중복 확인
+	사용자가 입력한 id text를 서버로 보내 DB에 있는지 확인한다. 있다면 다시 입력하라는 알림창을 띄우고,
+	id text 영역을 비운다. 없다면 사용 가능하다는 알림창을 띄운다.
+	(2) 닉네임 중복 확인
+	아이디 중복 확인과 동일한 방법을 사용한다,
+3. 프로필 사진 버튼 작동 원리
+	(1) Profile 클래스를 호출한다.
+	(2) - 1. 파일 찾기 버튼 작동 원리
+		(1) JFileChooser를 통해 사용자가 원하는 사진을 선택하게 한다.
+		(2) 선택한 사진 경로를 path 변수에 담고 왼쪽 상단 라벨에 선택한 사진을 출력한다
+	(2) - 2. 확인 버튼
+		(1) path 변수에 담긴 경로를 다시 MemberRegist의 imgPath 변수에 담는다
+		(2) 선택한 이미지를 MemberRegist의 중복 확인 버튼 밑에 출력한다
+4. 회원 가입 버튼 작동 원리
+	(1) 아이디와 닉네임 모두 중복 확인을 완료했는지, 중복 확인 후에 아이디와 닉네임을 몰래
+	바꾸진 않았는지, 마지막으로 프로필 사진 등록을 마쳤는지 확인한다.
+	모두 정상적이라면 regist() 메서드를 호출한다.
+	(2) regist() 메서드는 모든 텍스트 입력 창이 비워져 있는지 확인하고, 모두 채워져 있다면 
+	입력한 회원정보를 json형태로 저장 후 서버에 보낸다.
+
+<메인 화면에서의 작동 원리>
+1. 프로그램 가동
+	로그인 성공 후 parserResult의 parse() 메서드에 의해 호출되며, 호출됨과 동시에 로그인 창은
+	종료된다. 로그인 시 저장된 내 정보와 친구 목록을 불러와 화면에 출력한다.
+2. 친구 목록 창
+	(1) 친구 목록
+
+
+	
+	 
+	
+	
